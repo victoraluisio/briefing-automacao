@@ -1,0 +1,633 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Briefing de Automação</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: janela branca sobre formas coloridas; painel cinza com passo a passo no topo e cartão central em blocos de 3 colunas com ícone (estrutura do modelo enviado, paleta do site A Casa do Marketing) */
+:root {
+  --orange: #FF623E;
+  --orange-2: #FF8A4C;
+  --yellow: #FFDB5A;
+  --orange-ink: #C93A18;
+  --peach: #FFE6DC;
+  --ink: #0A0A0A;
+  --black: #1D1D1D;
+  --gray: #F7F9FC;
+  --white: #FFFFFF;
+  --muted: #5B5F66;
+  --line: rgba(29, 29, 29, .1);
+  --field: #F3F5F9;
+  --danger: #C62828;
+  --f-display: "Anton", "Bebas Neue", Impact, sans-serif;
+  --f-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --shadow: 0 30px 70px -30px rgba(10, 10, 10, .4);
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: #FFD9CB; color: var(--black); font: 16px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+
+/* Formas decorativas ao fundo */
+.bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.bg i { position: absolute; display: block; border-radius: 22%; }
+.bg .a { width: 460px; height: 460px; background: var(--orange); top: -230px; left: -170px; transform: rotate(-24deg); }
+.bg .b { width: 260px; height: 260px; background: var(--yellow); top: -90px; right: 14%; transform: rotate(28deg); }
+.bg .c { width: 560px; height: 560px; background: var(--orange-2); bottom: -300px; right: -200px; transform: rotate(-18deg); }
+.bg .d { width: 90px; height: 90px; background: var(--orange); bottom: 6%; left: 5%; transform: rotate(32deg); border-radius: 26%; }
+.bg .e { width: 90px; height: 90px; border: 3px solid var(--orange); bottom: 3%; left: 9%; transform: rotate(-16deg); border-radius: 26%; }
+
+.window { max-width: 1120px; margin: 40px auto; background: var(--white); border-radius: 16px; box-shadow: var(--shadow); overflow: hidden; width: calc(100% - 32px); }
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 28px; }
+.brand { display: flex; align-items: center; gap: 10px; font: 400 24px/1 var(--f-display); text-transform: uppercase; letter-spacing: .02em; }
+.brand-mark { width: 34px; height: 34px; border-radius: 10px; background: var(--orange); color: #fff; display: grid; place-items: center; }
+.brand-mark .ico { width: 20px; height: 20px; }
+.counter { font-size: 14px; color: var(--muted); font-weight: 500; }
+
+.panel-wrap { background: var(--gray); margin: 0 16px 16px; border-radius: 18px; padding: 28px clamp(14px, 3vw, 32px) 32px; display: grid; gap: 22px; }
+
+/* Passo a passo */
+.stepper { list-style: none; margin: 0; padding: 0; display: flex; }
+.stepper li { flex: 1 1 0; min-width: 0; }
+.stp { all: unset; display: grid; gap: 8px; width: 100%; cursor: default; box-sizing: border-box; }
+.stp:focus-visible { outline: 3px solid rgba(255, 98, 62, .45); outline-offset: 4px; border-radius: 6px; }
+li.done .stp { cursor: pointer; }
+.sn { display: flex; align-items: baseline; gap: 6px; font-size: 13px; color: #9aa0aa; white-space: nowrap; }
+.sn b { font: 700 18px/1 var(--f-body); color: #b7bcc6; }
+li.done .sn, li.cur .sn { color: var(--black); }
+li.done .sn b, li.cur .sn b { color: var(--black); }
+.track { display: flex; align-items: center; }
+.dot { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #cfd5de; background: var(--white); flex: none; display: grid; place-items: center; color: #fff; }
+.dot .ico { width: 12px; height: 12px; stroke-width: 3.2; }
+li.done .dot { background: var(--orange); border-color: var(--orange); }
+li.cur .dot { border-color: var(--orange); border-width: 3px; }
+.ln { flex: 1; height: 0; border-top: 2px solid #dfe3ea; margin-inline: 6px; }
+li.done .ln { border-top-color: var(--orange); }
+li.cur .ln { border-top: 2px dotted var(--orange); }
+li:last-child .ln { visibility: hidden; }
+.tm { font-size: 12px; color: #a4a9b3; }
+
+/* Cartão central */
+.card { background: var(--white); border-radius: 18px; display: grid; }
+.card-head { padding: 22px clamp(18px, 3vw, 32px) 0; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.card-title { font: 400 22px/1.2 var(--f-display); text-transform: uppercase; letter-spacing: .02em; padding-bottom: 14px; border-bottom: 3px solid var(--orange); margin-bottom: -1px; }
+.card-sub { font-size: 13.5px; color: var(--muted); }
+
+.panel { display: none; padding: 8px clamp(18px, 3vw, 32px) 4px; }
+.panel.is-current { display: block; }
+.intro { margin: 18px 0 0; color: var(--muted); font-size: 15px; max-width: 70ch; }
+.row { display: grid; grid-template-columns: minmax(0, 1fr); padding-block: 28px; }
+.row + .row { border-top: 1px solid var(--line); }
+.group + .group { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 28px; }
+.group { display: grid; gap: 18px; align-content: start; min-width: 0; }
+.gh { display: flex; align-items: center; gap: 12px; margin: 0; font: 600 17px/1.25 var(--f-body); }
+.gi { width: 34px; height: 34px; border: 1.5px solid var(--orange); border-radius: 9px; display: grid; place-items: center; color: var(--orange-ink); flex: none; }
+.gi .ico { width: 19px; height: 19px; }
+.gbody { display: grid; gap: 18px; min-width: 0; }
+.inner2 { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
+
+.field { display: grid; gap: 7px; min-width: 0; border: 0; padding: 0; margin: 0; }
+.field[hidden] { display: none; }
+.field-label { font-weight: 600; font-size: 14.5px; padding: 0; line-height: 1.4; }
+.req { color: var(--orange-ink); margin-left: 3px; }
+.hint { font-size: 13.5px; color: var(--muted); margin: -2px 0 0; }
+
+input[type=text], input[type=email], input[type=tel], input[type=url], select, textarea {
+  width: 100%; font: inherit; font-size: 15.5px; color: var(--black); background: var(--field);
+  border: 1.5px solid transparent; border-radius: 8px; padding: 12px 13px;
+}
+textarea { min-height: 120px; resize: vertical; }
+input::placeholder, textarea::placeholder { color: #8f949d; }
+input:focus-visible, select:focus-visible, textarea:focus-visible, .opt input:focus-visible + span, .consent input:focus-visible {
+  outline: 3px solid rgba(255, 98, 62, .4); outline-offset: 1px; border-color: var(--orange);
+}
+.field.invalid input, .field.invalid textarea, .field.invalid select { border-color: var(--danger); }
+.err { color: var(--danger); font-size: 13.5px; font-weight: 500; }
+
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt { position: relative; }
+.opt input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.opt span { display: inline-block; padding: 8px 15px; border: 1.5px solid var(--line); border-radius: 999px; font-size: 14.5px; font-weight: 500; background: var(--field); cursor: pointer; user-select: none; }
+.opt input:checked + span { background: rgba(255, 98, 62, .12); border-color: var(--orange); font-weight: 600; }
+.opt input:checked + span::before { content: "✓ "; color: var(--orange-ink); }
+
+.scope { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.scope label { display: grid; gap: 4px; padding: 18px; border: 1.5px solid var(--line); border-radius: 14px; background: var(--field); cursor: pointer; position: relative; }
+.scope input { position: absolute; top: 18px; right: 18px; accent-color: var(--orange); width: 20px; height: 20px; }
+.scope strong { font-weight: 700; padding-right: 30px; }
+.scope small { color: var(--muted); font-size: 13.5px; }
+.scope label:has(input:checked) { border-color: var(--orange); background: rgba(255, 98, 62, .08); }
+
+.consent { display: flex; gap: 10px; align-items: flex-start; font-size: 14.5px; }
+.consent input { margin-top: 4px; accent-color: var(--orange); width: 18px; height: 18px; flex: none; }
+
+.nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; padding: 20px clamp(18px, 3vw, 32px) 26px; border-top: 1px solid var(--line); }
+.nav-right { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-left: auto; }
+.btn { font: 700 15px/1 var(--f-body); text-transform: uppercase; letter-spacing: .02em; border-radius: 999px; padding: 17px 30px; cursor: pointer; border: 0; }
+.btn-primary { color: #fff; background: var(--orange); box-shadow: 0 14px 30px -12px rgba(255, 98, 62, .75); }
+.btn-primary:hover { background: var(--orange-2); }
+.btn-ghost { color: var(--black); background: transparent; border: 1.5px solid var(--line); }
+.btn-ghost:hover { border-color: var(--black); }
+.btn:focus-visible { outline: 3px solid rgba(255, 98, 62, .45); outline-offset: 2px; }
+.btn[disabled] { opacity: .6; cursor: progress; }
+.btn[hidden] { display: none; }
+.status { font-size: 14.5px; color: var(--muted); }
+.status.bad { color: var(--danger); font-weight: 500; }
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+.done { display: grid; gap: 12px; justify-items: start; padding: 40px clamp(18px, 3vw, 36px) 44px; background: var(--white); border-radius: 18px; }
+.done[hidden] { display: none; }
+.done .tick { width: 54px; height: 54px; border-radius: 50%; background: var(--orange); color: #fff; display: grid; place-items: center; }
+.done .tick .ico { width: 28px; height: 28px; stroke-width: 3; }
+.done h2 { font: 400 clamp(26px, 5vw, 34px)/1.1 var(--f-display); text-transform: uppercase; margin: 0; }
+.done p { margin: 0; color: var(--muted); max-width: 56ch; }
+footer { padding: 4px 28px 22px; font-size: 13px; color: var(--muted); }
+
+.ico { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+@media (max-width: 640px) {
+  .window { margin-block: 16px; }
+  .topbar { padding: 14px 18px; }
+  .sn .txt, .tm { display: none; }
+  li.cur .sn .txt { display: inline; }
+  .stepper { flex-wrap: wrap; row-gap: 12px; }
+  li.cur { flex: 1 1 100%; order: 2; }
+  .btn { padding: 15px 22px; }
+  footer { padding-inline: 18px; }
+}
+@media (prefers-reduced-motion: no-preference) { .btn { transition: background .15s, border-color .15s; } }
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i><i class="d"></i><i class="e"></i></div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M10 21v-5h4v5"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h12M9 12h12M9 18h12M4 6h.01M4 12h.01M4 18h.01"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/></symbol>
+  <symbol id="i-repeat" viewBox="0 0 24 24"><path d="m17 2 4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M16 7l3 3"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/></symbol>
+  <symbol id="i-smile" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 8v4l3 2"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 5 5 9-9"/></symbol>
+</svg>
+
+<div class="window">
+  <div class="topbar">
+    <div class="brand"><span class="brand-mark"><svg class="ico"><use href="#i-bolt"/></svg></span>Briefing</div>
+    <span class="counter" id="counter" aria-live="polite"></span>
+  </div>
+
+  <div class="panel-wrap">
+    <ol class="stepper" id="stepper" aria-label="Etapas do briefing"></ol>
+
+    <form id="briefing" class="card" novalidate>
+      <div class="hp" aria-hidden="true"><label for="hp_site">Não preencha</label><input type="text" id="hp_site" name="hp_site" tabindex="-1" autocomplete="off"></div>
+
+      <div class="card-head">
+        <span class="card-title">Briefing de automação.</span>
+        <span class="card-sub">(Aprox. 10 minutos)</span>
+      </div>
+
+      <!-- 01 · Contato e empresa -->
+      <section class="panel" data-title="Contato e empresa" data-name="Contato" data-time="1">
+        <p class="intro">Quem é você e qual é o seu negócio. Responda do seu jeito: o que você não souber pode ficar em branco.</p>
+        <div class="row">
+          <div class="group">
+            <h3 class="gh"><span class="gi"><svg class="ico"><use href="#i-user"/></svg></span>Você</h3>
+            <div class="gbody">
+              <div class="field" data-label="Nome"><label class="field-label" for="nome">Seu nome<span class="req">*</span></label><input type="text" id="nome" name="nome" required autocomplete="name"></div>
+              <div class="field" data-label="Cargo"><label class="field-label" for="cargo">Cargo / função</label><input type="text" id="cargo" name="cargo" placeholder="Ex: sócio, gerente"></div>
+            </div>
+          </div>
+          <div class="group">
+            <h3 class="gh"><span class="gi"><svg class="ico"><use href="#i-building"/></svg></span>Empresa</h3>
+            <div class="gbody">
+              <div class="field" data-label="Empresa"><label class="field-label" for="empresa">Nome da empresa<span class="req">*</span></label><input type="text" id="empresa" name="empresa" required autocomplete="organization"></div>
+              <div class="field" data-label="Segmento"><label class="field-label" for="segmento">Segmento</label><input type="text" id="segmento" name="segmento" placeholder="Ex: barbearia, academia, clínica"></div>
+              <div class="field" data-label="Cidade / UF"><label class="field-label" for="cidade">Cidade / UF</label><input type="text" id="cidade" name="cidade"></div>
+            </div>
+          </div>
+          <div class="group">
+            <h3 class="gh"><span class="gi"><svg class="ico"><use href="#i-mail"/></svg></span>Contato</h3>
+            <div class="gbody">
+              <div class="field" data-label="WhatsApp"><label class="field-label" for="whatsapp">WhatsApp<span class="req">*</span></label><input type="tel" id="whatsapp" name="whatsapp" required autocomplete="tel" placeholder="(61) 99999-9999"></div>
+              <div class="field" data-label="E-mail"><label class="field-label" for="email">E-mail<span class="req">*</span></label><input type="email" id="email" name="email" required autocomplete="email"></div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="group">
+            <h3 class="gh"><span class="gi"><svg class="ico"><use href="#i-globe"/></svg></span>Presença online</h3>
+            <div class="gbody inner2">
+              <div class="field" data-label="Site"><label class="field-label" for="site">Site</label><input type="text" id="site" name="site" inputmode="url" placeholder="www.suaempresa.com.br"></div>
+              <div class="field" data-label="Instagram"><label class="field-label" for="instagram">Instagram</label><input type="text" id="instagram" name="instagram" placeholder="@suaempresa"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 02 · Objetivo -->
+      <section class="panel" data-title="Objetivo" data-name="Objetivo" data-time="3">
+        <p class="intro">A parte mais importante. Pense no que mais toma tempo ou faz você perder clientes.</p>
+        <div class="row">
+          <div class="group">
+            <h3 class="gh"><span class="gi"><svg class="ico"><use href="#i-target"/></svg></span>O problema</h3>
+            <div class="gbody">
+              <div class="field" data-label="Principal problema"><label class="field-label" for="problema">Qual problema você quer resolver com a automação?<span class="req">*</span></label>
+                <textarea id="problema" name="problema" required placeholder="Ex: perco agendamentos porque ninguém responde o WhatsApp à noite"></textarea></div>
+              <div class="field" data-label="Como é feito hoje"><label class="field-label" for="hoje">Como isso é feito hoje, passo a passo?</label>
+                <textarea id="hoje" name="hoje" placeholder="Quem faz, em qual ferramenta, quanto tempo leva"></textarea></div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="group">
+            <h3 class="gh"><span class="gi"><svg class="ico"><use href="#i-doc"/></svg></span>Informações</h3>
+            <div class="gbody">
+              <div class="field" data-label="Informações necessárias e onde estão"><label class="field-label" for="informacoes">Quais informações a automação precisa ter acesso para executar o serviço e responder às questões levantadas? E onde elas se encontram atualmente?</label>
+                <textarea id="informacoes" name="informacoes" placeholder="Ex: tabela de preços (planilha no Google Drive), lista de itens e serviços (site), horários de funcionamento (Instagram)"></textarea></div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="group">
+            <h3 class="gh"><span class="gi"><svg class="ico"><use href="#i-list"/></svg></span>Passo a passo</h3>
+            <div class="gbody">
+              <div class="field" data-label="Passo a passo do atendimento"><label class="field-label" for="passo_a_passo">Caso exista um passo a passo que precisa ser seguido, defina aqui a ordem do atendimento</label>
+                <textarea id="passo_a_passo" name="passo_a_passo" placeholder="Ex: 1) cumprimentar e pedir o nome; 2) perguntar qual serviço; 3) oferecer profissional e horários; 4) confirmar o agendamento"></textarea></div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="group">
+            <h3 class="gh"><span class="gi"><svg class="ico"><use href="#i-layers"/></svg></span>O que precisa ser automatizado</h3>
+            <fieldset class="field" data-label="O que precisa ser automatizado"><legend class="field-label">Marque o que se aplica<span class="req">*</span></legend>
+              <p class="hint">As próximas etapas mudam conforme a sua escolha.</p>
+              <div class="scope">
+                <label><input type="checkbox" name="escopo" value="Atendimento WhatsApp com IA" data-toggle="sec-whatsapp"><strong>Atendimento no WhatsApp com IA</strong><small>Agendamento, dúvidas, triagem e encaminhamento para a equipe</small></label>
+                <label><input type="checkbox" name="escopo" value="Serviço que depende de sistemas" data-toggle="sec-integracoes"><strong>Esse serviço depende de algum sistema?</strong><small>Agenda, CRM, planilhas, pagamentos ou outro sistema que a automação também precisa acessar</small></label>
+              </div>
+            </fieldset>
+          </div>
+        </div>
+      </section>
+
+      <!-- 03 · Atendimento no WhatsApp (condicional) -->
+      <section class="panel" id="sec-whatsapp" data-title="Atendimento WhatsApp com IA" data-name="WhatsApp" data-time="3">
+        <p class="intro">Para eu entender como o seu atendimento funciona e o que o assistente precisa saber fazer.</p>
+        <div class="row">
+          <div class="group">
+            <h3 class="gh"><span class="gi"><svg class="ico"><use href="#i-chat"/></svg></span>Canal de atendimento</h3>
+            <div class="gbody">
+              <fieldset class="field" data-label="Tipo de WhatsApp"><legend class="field-label">Qual WhatsApp vocês usam?</legend>
+                <div class="opts">
+                  <label class="opt"><input type="radio" name="wa_tipo" value="WhatsApp comum"><span>Comum</span></label>
+                  <label class="opt"><input type="radio" name="wa_tipo" value="WhatsApp Business (app)"><span>Business (app)</span></label>
+                  <label class="opt"><input type="radio" name="wa_tipo" value="API oficial (Meta)"><span>API oficial</span></label>
+                  <label class="opt"><input type="radio" name="wa_tipo" value="Não sei"><span>Não sei</span></label>
+                </div></fieldset>
+              <div class="field" data-label="Quem atende hoje"><label class="field-label" for="wa_quem">Quem responde o WhatsApp hoje, e em qual horário?</label>
+                <input type="text" id="wa_quem" name="wa_quem" placeholder="Ex: a recepcionista, das 9h às 19h"></div>
+              <div class="field" data-label="Agenda / pedidos"><label class="field-label" for="wa_agenda">Agenda: onde ficam os agendamentos e pedidos hoje?</label>
+                <input type="text" id="wa_agenda" name="wa_agenda" placeholder="Ex: BEMP, Trinks, Google Agenda, planilha, caderno"></div>
+            </div>
+          </div>
+          <div class="group">
+            <h3 class="gh"><span class="gi"><svg class="ico"><use href="#i-list"/></svg></span>Tarefas do assistente</h3>
+            <div class="gbody">
+              <fieldset class="field" data-label="Tarefas do assistente"><legend class="field-label">O que o assistente deve fazer?</legend>
+                <div class="opts">
+                  <label class="opt"><input type="checkbox" name="wa_tarefas" value="Agendar horários"><span>Agendar horários</span></label>
+                  <label class="opt"><input type="checkbox" name="wa_tarefas" value="Remarcar e cancelar"><span>Remarcar e cancelar</span></label>
+                  <label class="opt"><input type="checkbox" name="wa_tarefas" value="Informar preços e serviços"><span>Informar preços e serviços</span></label>
+                  <label class="opt"><input type="checkbox" name="wa_tarefas" value="Tirar dúvidas frequentes"><span>Tirar dúvidas frequentes</span></label>
+                  <label class="opt"><input type="checkbox" name="wa_tarefas" value="Qualificar leads"><span>Qualificar novos clientes</span></label>
+                  <label class="opt"><input type="checkbox" name="wa_tarefas" value="Enviar lembretes"><span>Enviar lembretes</span></label>
+                  <label class="opt"><input type="checkbox" name="wa_tarefas" value="Cobrança / link de pagamento"><span>Cobrança / pagamento</span></label>
+                  <label class="opt"><input type="checkbox" name="wa_tarefas" value="Pós-atendimento e avaliação"><span>Pós-atendimento</span></label>
+                </div>
+                <input type="text" id="wa_tarefas_outro" name="wa_tarefas_outro" placeholder="Outra tarefa (opcional)" aria-label="Outra tarefa do assistente"></fieldset>
+            </div>
+          </div>
+          <div class="group">
+            <h3 class="gh"><span class="gi"><svg class="ico"><use href="#i-smile"/></svg></span>Tom do assistente</h3>
+            <div class="gbody">
+              <fieldset class="field" data-label="Tom do assistente"><legend class="field-label">Defina o tom com que o assistente deve falar e se portar</legend>
+                <p class="hint">Você pode marcar mais de um.</p>
+                <div class="opts">
+                  <label class="opt"><input type="checkbox" name="wa_tom" value="Descontraído"><span>Descontraído</span></label>
+                  <label class="opt"><input type="checkbox" name="wa_tom" value="Cordial e direto"><span>Cordial e direto</span></label>
+                  <label class="opt"><input type="checkbox" name="wa_tom" value="Formal"><span>Formal</span></label>
+                  <label class="opt"><input type="checkbox" name="wa_tom" value="Profissional"><span>Profissional</span></label>
+                  <label class="opt"><input type="checkbox" name="wa_tom" value="Gentil"><span>Gentil</span></label>
+                </div></fieldset>
+              <fieldset class="field" data-label="Emoticons"><legend class="field-label">Utilizar emoticons (emojis) nas respostas?</legend>
+                <div class="opts">
+                  <label class="opt"><input type="radio" name="wa_emoji" value="Sim, utilizar emoticons"><span>Sim, utilizar</span></label>
+                  <label class="opt"><input type="radio" name="wa_emoji" value="Não utilizar emoticons"><span>Não utilizar</span></label>
+                </div></fieldset>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 04 · Sistemas e integrações (condicional) -->
+      <section class="panel" id="sec-integracoes" data-title="Integrações e sistemas" data-name="Sistemas" data-time="3">
+        <p class="intro">Quais ferramentas vocês usam e onde a informação é digitada mais de uma vez.</p>
+        <div class="row">
+          <div class="group">
+            <h3 class="gh"><span class="gi"><svg class="ico"><use href="#i-layers"/></svg></span>Ferramentas</h3>
+            <div class="gbody">
+              <fieldset class="field" data-label="Ferramentas usadas"><legend class="field-label">Quais ferramentas vocês usam?</legend>
+                <div class="opts">
+                  <label class="opt"><input type="checkbox" name="int_ferramentas" value="Planilhas (Google/Excel)"><span>Planilhas</span></label>
+                  <label class="opt"><input type="checkbox" name="int_ferramentas" value="Sistema de agenda"><span>Sistema de agenda</span></label>
+                  <label class="opt"><input type="checkbox" name="int_ferramentas" value="CRM"><span>CRM</span></label>
+                  <label class="opt"><input type="checkbox" name="int_ferramentas" value="ERP / sistema de gestão"><span>ERP / gestão</span></label>
+                  <label class="opt"><input type="checkbox" name="int_ferramentas" value="Pagamentos (Pix, maquininha, gateway)"><span>Pagamentos</span></label>
+                  <label class="opt"><input type="checkbox" name="int_ferramentas" value="Loja virtual"><span>Loja virtual</span></label>
+                  <label class="opt"><input type="checkbox" name="int_ferramentas" value="E-mail marketing"><span>E-mail marketing</span></label>
+                  <label class="opt"><input type="checkbox" name="int_ferramentas" value="Nota fiscal"><span>Nota fiscal</span></label>
+                </div></fieldset>
+              <div class="field" data-label="Sistemas utilizados"><label class="field-label" for="int_nomes">Descreva todos os sistemas que vocês utilizam hoje para fornecer seus produtos ou serviços</label>
+                <textarea id="int_nomes" name="int_nomes" placeholder="Ex: agenda no BEMP, financeiro no Conta Azul, clientes numa planilha do Google"></textarea></div>
+            </div>
+          </div>
+          <div class="group">
+            <h3 class="gh"><span class="gi"><svg class="ico"><use href="#i-repeat"/></svg></span>Tarefas manuais</h3>
+            <div class="gbody">
+              <div class="field" data-label="Tarefas manuais a automatizar"><label class="field-label" for="int_repetitiva">Quais tarefas manuais (repetitivas) vocês desejam automatizar conosco?</label>
+                <textarea id="int_repetitiva" name="int_repetitiva" placeholder="Ex: copiar os agendamentos do dia para a planilha de comissão"></textarea></div>
+              <div class="field" data-label="Tempo gasto por semana"><label class="field-label" for="int_tempo">Horas por semana nessas tarefas</label>
+                <select id="int_tempo" name="int_tempo"><option value="">Selecione</option><option>Menos de 2h</option><option>2 a 5h</option><option>5 a 10h</option><option>Mais de 10h</option></select></div>
+            </div>
+          </div>
+          <div class="group">
+            <h3 class="gh"><span class="gi"><svg class="ico"><use href="#i-key"/></svg></span>Acessos e dados</h3>
+            <div class="gbody">
+              <div class="field" data-label="Credenciais de teste"><label class="field-label" for="int_credenciais">Nos forneça login e senha dos sistemas para montarmos uma automação de teste</label>
+                <p class="hint">Informe, para cada sistema, um login e senha que nos permitam acesso. Se puder, crie um usuário de teste com acesso limitado.</p>
+                <textarea id="int_credenciais" name="int_credenciais" autocomplete="off" placeholder="Sistema: BEMP&#10;Login: usuario@empresa.com&#10;Senha: ..."></textarea></div>
+              <fieldset class="field" data-label="Dados sensíveis"><legend class="field-label">A automação vai lidar com dados sensíveis?</legend>
+                <p class="hint">Saúde, documentos (CPF, RG), dados financeiros. Ajuda a planejar a adequação à LGPD.</p>
+                <div class="opts">
+                  <label class="opt"><input type="radio" name="int_sensivel" value="Sim"><span>Sim</span></label>
+                  <label class="opt"><input type="radio" name="int_sensivel" value="Não"><span>Não</span></label>
+                  <label class="opt"><input type="radio" name="int_sensivel" value="Não sei"><span>Não sei</span></label>
+                </div></fieldset>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Fechamento -->
+      <section class="panel" data-title="Fechamento" data-name="Fechamento" data-time="1">
+        <p class="intro">Falta pouco. Conte se você já tentou algo parecido e a melhor hora para conversarmos.</p>
+        <div class="row">
+          <div class="group">
+            <h3 class="gh"><span class="gi"><svg class="ico"><use href="#i-history"/></svg></span>Experiência anterior</h3>
+            <div class="gbody">
+              <div class="field" data-label="Já usou automação"><label class="field-label" for="ja_usou">Já tentou alguma automação ou chatbot antes?</label>
+                <select id="ja_usou" name="ja_usou"><option value="">Selecione</option><option>Não</option><option>Sim</option></select></div>
+              <div class="field" data-label="Experiência anterior" id="exp-field" hidden><label class="field-label" for="experiencia">Como foi a sua experiência?</label>
+                <textarea id="experiencia" name="experiencia"></textarea></div>
+            </div>
+          </div>
+          <div class="group">
+            <h3 class="gh"><span class="gi"><svg class="ico"><use href="#i-calendar"/></svg></span>Conversa</h3>
+            <div class="gbody">
+              <div class="field" data-label="Melhor horário para contato"><label class="field-label" for="horario">Melhor horário para conversarmos</label>
+                <input type="text" id="horario" name="horario" placeholder="Ex: terça ou quinta à tarde"></div>
+            </div>
+          </div>
+          <div class="group">
+            <h3 class="gh"><span class="gi"><svg class="ico"><use href="#i-shield"/></svg></span>Autorização</h3>
+            <div class="gbody">
+              <div class="field" data-label="Consentimento LGPD">
+                <label class="consent"><input type="checkbox" id="consentimento" name="consentimento" value="Autorizado" required><span>Autorizo o uso destas informações para elaborar a proposta de automação e para contato sobre ela.<span class="req">*</span></span></label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="nav">
+        <button type="button" class="btn btn-ghost" id="voltar" hidden>Voltar</button>
+        <div class="nav-right">
+          <span class="status" id="status" role="status" aria-live="polite"></span>
+          <button type="submit" class="btn btn-primary" id="avancar">Continuar</button>
+        </div>
+      </div>
+    </form>
+
+    <section class="done" id="done" hidden tabindex="-1">
+      <span class="tick"><svg class="ico"><use href="#i-check"/></svg></span>
+      <h2>Obrigado! Seu briefing chegou.</h2>
+      <p>Vou analisar as respostas e falar com você pelo WhatsApp informado para marcarmos a conversa.</p>
+    </section>
+  </div>
+  <footer>As informações enviadas são usadas só para elaborar a sua proposta.</footer>
+</div>
+
+<script>
+// ---- Configuração ---------------------------------------------------------
+// URL de produção do nó Webhook no n8n (POST). Sem ela o envio fica desativado.
+const WEBHOOK_URL = "";
+// ---------------------------------------------------------------------------
+
+const form = document.getElementById("briefing");
+const stepperEl = document.getElementById("stepper");
+const counterEl = document.getElementById("counter");
+const statusEl = document.getElementById("status");
+const btnNext = document.getElementById("avancar");
+const btnBack = document.getElementById("voltar");
+const panels = [...form.querySelectorAll(".panel")];
+const DRAFT_KEY = "briefing-automacao-rascunho";
+let cur = 0;
+
+const isEnabled = p => {
+  const t = p.id && form.querySelector('input[data-toggle="' + p.id + '"]');
+  return !t || t.checked;
+};
+const visible = () => panels.filter(isEnabled);
+
+function render() {
+  const vis = visible();
+  if (cur > vis.length - 1) cur = vis.length - 1;
+  panels.forEach(p => p.classList.toggle("is-current", p === vis[cur]));
+
+  stepperEl.innerHTML = "";
+  vis.forEach((p, i) => {
+    const li = document.createElement("li");
+    li.className = i < cur ? "done" : i === cur ? "cur" : "";
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "stp";
+    b.disabled = !(i < cur);
+    if (i === cur) b.setAttribute("aria-current", "step");
+    const num = String(i + 1).padStart(2, "0");
+    b.innerHTML = '<span class="sn"><b>' + num + '</b><span class="txt"></span></span>' +
+      '<span class="track"><span class="dot">' + (i < cur ? '<svg class="ico"><use href="#i-check"/></svg>' : '') + '</span><span class="ln"></span></span>' +
+      (i >= cur ? '<span class="tm"></span>' : '');
+    b.querySelector(".txt").textContent = p.dataset.name;
+    const tm = b.querySelector(".tm"); if (tm) tm.textContent = "Aprox. " + p.dataset.time + " min";
+    b.addEventListener("click", () => { cur = i; render(); scrollToCard(); });
+    li.appendChild(b); stepperEl.appendChild(li);
+  });
+
+  counterEl.textContent = "Etapa " + (cur + 1) + " de " + vis.length;
+  btnBack.hidden = cur === 0;
+  btnNext.textContent = cur === vis.length - 1 ? "Enviar briefing" : "Continuar";
+}
+
+function scrollToCard() { form.scrollIntoView({ behavior: "smooth", block: "start" }); }
+
+function fieldValue(field) {
+  const parts = [];
+  field.querySelectorAll("input, select, textarea").forEach(el => {
+    if (el.type === "checkbox" || el.type === "radio") { if (el.checked) parts.push(el.value); }
+    else if (el.value.trim()) parts.push(el.value.trim());
+  });
+  return parts.join(", ");
+}
+
+function collect() {
+  const secoes = [];
+  visible().forEach(sec => {
+    const campos = [];
+    sec.querySelectorAll(".field[data-label]").forEach(f => {
+      if (f.hidden) return;
+      const valor = fieldValue(f);
+      if (valor) campos.push({ rotulo: f.dataset.label, valor });
+    });
+    if (campos.length) secoes.push({ titulo: sec.dataset.title, campos });
+  });
+  const v = id => document.getElementById(id).value.trim();
+  return {
+    contato: { nome: v("nome"), empresa: v("empresa"), email: v("email"), whatsapp: v("whatsapp") },
+    secoes,
+    enviado_em: new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }),
+  };
+}
+
+// Devolve a lista de campos que faltam (vazia = tudo certo)
+function validate(panel) {
+  let first = null;
+  const missing = [];
+  panel.querySelectorAll(".field").forEach(f => { f.classList.remove("invalid"); f.querySelector(".err")?.remove(); });
+  const fail = (field, msg, focusEl) => {
+    field.classList.add("invalid");
+    const e = document.createElement("span"); e.className = "err"; e.textContent = msg; field.appendChild(e);
+    const lbl = field.querySelector(".field-label");
+    missing.push(lbl && field.tagName !== "FIELDSET" ? lbl.textContent.replace("*", "").trim() : field.dataset.label);
+    first = first || focusEl;
+  };
+  panel.querySelectorAll("[required]").forEach(el => {
+    const field = el.closest(".field");
+    if (el.type === "checkbox" ? !el.checked : !el.value.trim()) fail(field, el.type === "checkbox" ? "Marque para enviar." : "Preencha este campo.", el);
+    else if (el.type === "email" && !/^\S+@\S+\.\S+$/.test(el.value.trim())) fail(field, "Confira o e-mail: falta o @ ou o domínio.", el);
+  });
+  const escopo = panel.querySelector('[data-label="O que precisa ser automatizado"]');
+  if (escopo && !escopo.querySelector("input:checked")) fail(escopo, "Escolha pelo menos uma opção.", escopo.querySelector("input"));
+  if (first) { first.focus({ preventScroll: true }); first.scrollIntoView({ block: "center", behavior: "smooth" }); }
+  return missing;
+}
+
+function showMissing(missing) {
+  statusEl.className = "status bad";
+  statusEl.textContent = "Falta preencher: " + missing.join("; ") + ".";
+}
+
+function saveDraft() {
+  try {
+    const data = {};
+    form.querySelectorAll("input, select, textarea").forEach(el => {
+      if (!el.name || el.name === "hp_site") return;
+      if (el.type === "checkbox" || el.type === "radio") data[el.name + "::" + el.value] = el.checked;
+      else data[el.name] = el.value;
+    });
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(data));
+  } catch (_) {}
+}
+
+function loadDraft() {
+  try {
+    const data = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null");
+    if (!data) return;
+    form.querySelectorAll("input, select, textarea").forEach(el => {
+      if (el.type === "checkbox" || el.type === "radio") { const k = el.name + "::" + el.value; if (k in data) el.checked = data[k]; }
+      else if (el.name in data) el.value = data[el.name];
+    });
+  } catch (_) {}
+}
+
+function syncExperiencia() {
+  document.getElementById("exp-field").hidden = document.getElementById("ja_usou").value !== "Sim";
+}
+
+form.addEventListener("change", e => {
+  if (e.target.dataset.toggle) render();
+  if (e.target.id === "ja_usou") syncExperiencia();
+  saveDraft();
+});
+form.addEventListener("input", saveDraft);
+
+btnBack.addEventListener("click", () => { if (cur > 0) { cur--; statusEl.textContent = ""; render(); scrollToCard(); } });
+
+form.addEventListener("submit", async e => {
+  e.preventDefault();
+  statusEl.className = "status"; statusEl.textContent = "";
+  if (document.getElementById("hp_site").value) return;
+
+  const vis = visible();
+  if (cur < vis.length - 1) {
+    const m = validate(vis[cur]);
+    if (m.length === 0) { cur++; render(); scrollToCard(); }
+    else showMissing(m);
+    return;
+  }
+
+  for (let i = 0; i < vis.length; i++) {
+    if (validate(vis[i]).length) {
+      cur = i; render();
+      showMissing(validate(vis[i]));
+      return;
+    }
+  }
+  if (!WEBHOOK_URL) { statusEl.className = "status bad"; statusEl.textContent = "Envio ainda não configurado (WEBHOOK_URL vazio)."; console.log(collect()); return; }
+
+  btnNext.disabled = true; btnNext.textContent = "Enviando…";
+  try {
+    const res = await fetch(WEBHOOK_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(collect()) });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    try { localStorage.removeItem(DRAFT_KEY); } catch (_) {}
+    form.hidden = true; stepperEl.hidden = true; counterEl.hidden = true;
+    const done = document.getElementById("done"); done.hidden = false; done.focus();
+    window.scrollTo({ top: 0 });
+  } catch (err) {
+    statusEl.className = "status bad";
+    statusEl.textContent = "Não foi possível enviar agora. Suas respostas continuam salvas aqui; tente de novo em alguns minutos.";
+    btnNext.disabled = false; btnNext.textContent = "Enviar briefing";
+  }
+});
+
+loadDraft();
+syncExperiencia();
+render();
+</script>
+</body>
+</html>
